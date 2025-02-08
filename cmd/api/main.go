@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/lai0xn/orka/internal/infra/db"
 	"github.com/lai0xn/orka/internal/server"
 )
 
@@ -11,6 +12,11 @@ func main() {
 		PORT:   ":8080",
 		Router: r,
 	})
+	_, err := db.Connect()
+
+	if err != nil {
+		panic(err)
+	}
 
 	s.Run()
 }

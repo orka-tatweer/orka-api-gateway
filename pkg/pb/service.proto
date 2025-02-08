@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+option go_package = "pkg/pb";
+
+import "google/protobuf/timestamp.proto";
+
+package pb;
+
+message LogisticsRequest {
+    repeated Task tasks = 1;
+    map<string, int32> resource_pool = 2;
+    map<string, TransitMap> transit_matrix = 3;
+    string objective = 4;
+    repeated string vehicles = 5;
+}
+
+message Resource {
+	string machine_id = 1;
+	int32 available_hours = 2;
+	repeated google.protobuf.Timestamp maintenance = 3;
+}
+
+message DemandForecast {
+	int32 product_id = 1;
+	int32 quantity = 2;
+	google.protobuf.Timestamp due_date = 3;	
+}
+
+message ProductCapacity {
+	int32 max_shifts = 1;
+	float hours_per_shift = 2;
+	float downtime_factor = 3;
+}
+
+message ProductionPlanRequest {
+	repeated DemandForecast demand = 1;
+	repeated Resource resources = 2;
+	ProductCapacity capacity = 3;
+	
+}
+
+message ProductSchedule {
+  string product = 1;
+  int32 quantity = 2;
+}
+
+message ScheduleEntry {
+  string machine_id = 1;
+  repeated ProductSchedule products = 2;
+}
+
+message MachineSchedule {
+  repeated ProductSchedule schedules = 1;
+}
+
+message ProductionResponse {
+  map<string, MachineSchedule> schedule = 1;
+  string explanation = 2;
+}
+
+message Task {
+    string id = 1;
+    string name = 2;
+    int32 duration = 3;
+    int32 earliest_start = 4;
+    int32 latest_end = 5;
+    repeated string dependencies = 6;
+    map<string, int32> resources_required = 7;
+    string location = 8;
+    float cost_per_hour = 9;
+    int32 priority = 10;
+}
+
+message TransitMap {
+    map<string, int32> transit_times = 1;
+}
+
+message ScheduleTask {
+    string name = 1;
+    int32 start = 2;
+    int32 end = 3;
+    map<string, int32> resources = 4;
+    string location = 5;
+    string vehicle = 6;
+}
+
+message ScheduleResponse {
+    map<string, ScheduleTask> schedule = 1;
+    optional int32 makespan = 2;
+    optional float total_cost = 3;
+}
+
+message OptimizeScheduleResponse {
+    ScheduleResponse result = 1;
+}
+
+service Scheduler {
+	rpc ScheduleTasks(LogisticsRequest) returns (OptimizeScheduleResponse);
+	rpc GenerateProductionPlan(ProductionPlanRequest) returns (ProductionResponse);
+}
+
