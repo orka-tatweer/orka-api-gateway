@@ -50,3 +50,27 @@ func (a *APIClient) ScheduleTask(data LogisticsRequestDTO) (*OptimizeScheduleRes
 	return &response, nil
 
 }
+
+func (a *APIClient) ProductionPlan(data ProductionPlanRequest) (*ProductionResponse, error) {
+	jsonBody, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := a.client.Post(a.BASE_URI+"/generate_production_plan",
+		"application/json", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var response ProductionResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+
+}

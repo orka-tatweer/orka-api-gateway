@@ -9,6 +9,12 @@ type AuthService struct {
 	repo AuthRepo
 }
 
+func NewAuthService(repo AuthRepo) *AuthService {
+	return &AuthService{
+		repo: repo,
+	}
+}
+
 func (s AuthService) Signup(dto SignupDTO) error {
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(dto.Password), 12)
 	if err != nil {

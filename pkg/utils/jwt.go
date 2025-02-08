@@ -24,22 +24,24 @@ func GenerateToken(user domain.User) (string, error) {
 	return tokenString, nil
 }
 
-func ParseToken(tokenString string) *jwt.Token {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func ParseToken(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret), nil
 	})
 	if err != nil {
-		log.Println(err)
-		return nil
+		log.Println("Error parsing token:", err)
+		return nil, err
 	}
 
-	return token
+	// Extract claims
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, jwt.ErrSignatureInvalid
 }
 
 func RefreshToken(refreshToken string) (string, error) {
-	// Parse and validate the refresh token
 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
-		// Check token signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("Invalid token signing method")
 		}
@@ -49,12 +51,10 @@ func RefreshToken(refreshToken string) (string, error) {
 		return "", err
 	}
 
-	// Check if token is valid and not expired
 	if !token.Valid {
 		return "", errors.New("Invalid token")
 	}
 
-	// Extract user information from the token, such as user ID or username
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
 		return "", errors.New("Invalid token claims")

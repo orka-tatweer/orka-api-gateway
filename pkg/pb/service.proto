@@ -59,12 +59,12 @@ message ProductionResponse {
 }
 
 message Task {
-    string id = 1;
+    uint32 id = 1;
     string name = 2;
     int32 duration = 3;
     int32 earliest_start = 4;
     int32 latest_end = 5;
-    repeated string dependencies = 6;
+    repeated uint32 dependencies = 6;
     map<string, int32> resources_required = 7;
     string location = 8;
     float cost_per_hour = 9;
